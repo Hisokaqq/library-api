@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import CreateUserView, UserProfileView, ChangePasswordView, UserListView
+from .views import CreateUserView, UserProfileView, ChangePasswordView, UserListView, UpdateLikedBooksView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.routers import DefaultRouter
 
@@ -15,4 +15,6 @@ urlpatterns = [
     path('user/profile/', UserProfileView.as_view(), name='user_profile'),
     path('user/change_password/', ChangePasswordView.as_view(), name='change_password'),
     path('', include(router.urls)),
+
+    path('user/liked-books/', UpdateLikedBooksView.as_view(), name='liked_books'),
 ]

@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Profile
-
+from library.serializers import BookListSerializer
+from library.models import Book
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -57,3 +58,12 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email']
+
+
+
+class LikedBooksSerializer(serializers.ModelSerializer):
+    liked_books = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all(), many=True)
+
+    class Meta:
+        model = Profile
+        fields = ["liked_books"]

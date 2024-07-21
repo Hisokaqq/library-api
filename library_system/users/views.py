@@ -8,6 +8,7 @@ from .paginations import UserListPagination
 from library_system.permissions import IsLibrarian, IsAdmin
 from rest_framework.decorators import action
 from .models import Profile 
+from .serializers import LikedBooksSerializer
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -45,7 +46,7 @@ class UserListView(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
     pagination_class = UserListPagination
-    
+    permission_classes = [IsAuthenticated | IsAdmin]
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             permission_classes = [IsAuthenticated, IsLibrarian | IsAdmin]
@@ -63,7 +64,6 @@ class UserListView(viewsets.ModelViewSet):
         if username:
             queryset = queryset.filter(username__icontains=username)
         if full_name:
-            print(3123123131, full_name)
             names = full_name.split()
             if len(names) == 2:
                 queryset = queryset.filter(first_name__icontains=names[0]) & queryset.filter(last_name__icontains=names[1])
@@ -83,3 +83,17 @@ class UserListView(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+class UpdateLikedBooksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.get(user=user)
+        serializer = LikedBooksSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            liked_books = serializer.validated_data.get('liked_books')
+            profile.liked_books.set(liked_books)
+            profile.save()
+            return Response({"message": "Liked books updated successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
